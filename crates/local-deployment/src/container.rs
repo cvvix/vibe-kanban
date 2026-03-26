@@ -315,6 +315,13 @@ impl LocalContainerService {
                     .unwrap_or_else(|e| {
                         tracing::error!("Failed to clean up expired workspaces: {}", e)
                     });
+
+                // Run lightweight gc on all repo paths to prevent loose object buildup
+                if let Ok(repos) = Repo::list_all(&container.db.pool).await {
+                    for repo in &repos {
+                        container.git.gc_auto(&repo.path);
+                    }
+                }
             }
         });
     }
@@ -470,6 +477,7 @@ impl LocalContainerService {
                     tracing::warn!("Failed to commit in repo '{}': {}", repo.name, e);
                 }
             }
+            self.git().gc_auto(&worktree_path);
         }
 
         any_committed
