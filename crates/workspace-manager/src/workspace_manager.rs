@@ -261,8 +261,8 @@ impl WorkspaceManager {
 
             if delete_branches {
                 let git_service = GitService::new();
-                for repo_path in repo_paths {
-                    match git_service.delete_branch(&repo_path, &branch_name) {
+                for repo_path in &repo_paths {
+                    match git_service.delete_branch(repo_path, &branch_name) {
                         Ok(()) => {
                             info!("Deleted branch '{}' from repo {:?}", branch_name, repo_path);
                         }
@@ -274,16 +274,15 @@ impl WorkspaceManager {
                         }
                     }
                 }
+
+                // After deleting branches, run aggressive gc to reclaim
+                // space from the now-unreachable commit chains.
+                for repo_path in &repo_paths {
+                    git_service.gc_prune_now(repo_path);
+                }
             }
         });
     }
-
-                    // After deleting branches, run aggressive gc to reclaim
-                    // space from the now-unreachable commit chains.
-                    let git_service = GitService::new();
-                    for repo_path in &repo_paths {
-                        git_service.gc_prune_now(repo_path);
-}
 
     async fn remove_session_process_logs(session_id: Uuid) -> Result<(), std::io::Error> {
         let dir = utils::execution_logs::process_logs_session_dir(session_id);

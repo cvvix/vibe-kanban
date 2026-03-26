@@ -969,26 +969,26 @@ impl GitService {
     pub fn delete_branch(
         &self,
         repo_path: &Path,
-
-            /// Run `git gc --auto` to let git decide if housekeeping is needed.
-            /// Safe to call frequently; a no-op when below git's internal thresholds.
-            pub fn gc_auto(&self, repo_path: &Path) {
-                let git = GitCli::new();
-                git.gc_auto(repo_path);
-    }
-
-        /// Run `git gc --prune=now` to aggressively reclaim space.
-        /// Use after bulk operations like workspace deletion + branch removal.
-        pub fn gc_prune_now(&self, repo_path: &Path) {
-                    let git = GitCli::new();
-                    git.gc_prune_now(repo_path);
-        }
         branch_name: &str,
     ) -> Result<(), GitServiceError> {
         let git = GitCli::new();
         git.delete_branch(repo_path, branch_name)
             .map_err(|e| GitServiceError::InvalidRepository(e.to_string()))?;
         Ok(())
+    }
+
+    /// Run `git gc --auto` to let git decide if housekeeping is needed.
+    /// Safe to call frequently; a no-op when below git's internal thresholds.
+    pub fn gc_auto(&self, repo_path: &Path) {
+        let git = GitCli::new();
+        git.gc_auto(repo_path);
+    }
+
+    /// Run `git gc --prune=now` to aggressively reclaim space.
+    /// Use after bulk operations like workspace deletion + branch removal.
+    pub fn gc_prune_now(&self, repo_path: &Path) {
+        let git = GitCli::new();
+        git.gc_prune_now(repo_path);
     }
 
     pub fn get_all_branches(&self, repo_path: &Path) -> Result<Vec<GitBranch>, GitServiceError> {

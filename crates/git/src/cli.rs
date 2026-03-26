@@ -157,29 +157,29 @@ impl GitCli {
     /// Return true if there are any changes in the working tree (staged or unstaged).
     pub fn has_changes(&self, worktree_path: &Path) -> Result<bool, GitCliError> {
         let out = self.git(
-
-                /// Run `git gc --auto` to let git decide whether housekeeping is needed.
-                /// This is safe to call frequently; git will only compact when its internal
-                /// thresholds are exceeded (too many loose objects, too many pack files, etc.).
-                /// Errors are intentionally swallowed because gc is best-effort maintenance.
-                pub fn gc_auto(&self, repo_path: &Path) {
-                    if let Err(e) = self.git(repo_path, ["gc", "--auto"]) {
-                                    tracing::debug!("git gc --auto non-fatal error: {}", e);
-                    }
-        }
-
-            /// Run `git gc --prune=now` to aggressively reclaim space from unreachable
-            /// objects. This is more expensive than `gc_auto` and should only be used
-            /// after bulk cleanup operations (e.g. workspace deletion + branch removal).
-            pub fn gc_prune_now(&self, repo_path: &Path) {
-                        if let Err(e) = self.git(repo_path, ["gc", "--prune=now"]) {
-                                        tracing::debug!("git gc --prune=now non-fatal error: {}", e);
-                        }
-            }
             worktree_path,
             ["--no-optional-locks", "status", "--porcelain"],
         )?;
         Ok(!out.is_empty())
+    }
+
+    /// Run `git gc --auto` to let git decide whether housekeeping is needed.
+    /// This is safe to call frequently; git will only compact when its internal
+    /// thresholds are exceeded (too many loose objects, too many pack files, etc.).
+    /// Errors are intentionally swallowed because gc is best-effort maintenance.
+    pub fn gc_auto(&self, repo_path: &Path) {
+        if let Err(e) = self.git(repo_path, ["gc", "--auto"]) {
+            tracing::debug!("git gc --auto non-fatal error: {}", e);
+        }
+    }
+
+    /// Run `git gc --prune=now` to aggressively reclaim space from unreachable
+    /// objects. This is more expensive than `gc_auto` and should only be used
+    /// after bulk cleanup operations (e.g. workspace deletion + branch removal).
+    pub fn gc_prune_now(&self, repo_path: &Path) {
+        if let Err(e) = self.git(repo_path, ["gc", "--prune=now"]) {
+            tracing::debug!("git gc --prune=now non-fatal error: {}", e);
+        }
     }
 
     /// Diff status vs a base branch using a temporary index (always includes untracked).
