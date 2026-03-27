@@ -977,6 +977,20 @@ impl GitService {
         Ok(())
     }
 
+    /// Run `git gc --auto` to let git decide if housekeeping is needed.
+    /// Safe to call frequently; a no-op when below git's internal thresholds.
+    pub fn gc_auto(&self, repo_path: &Path) {
+        let git = GitCli::new();
+        git.gc_auto(repo_path);
+    }
+
+    /// Run `git gc --prune=now` to aggressively reclaim space.
+    /// Use after bulk operations like workspace deletion + branch removal.
+    pub fn gc_prune_now(&self, repo_path: &Path) {
+        let git = GitCli::new();
+        git.gc_prune_now(repo_path);
+    }
+
     pub fn get_all_branches(&self, repo_path: &Path) -> Result<Vec<GitBranch>, GitServiceError> {
         let repo = Repository::open(repo_path)?;
         let current_branch = self.get_current_branch(repo_path).unwrap_or_default();
